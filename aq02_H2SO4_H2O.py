@@ -5,9 +5,11 @@ import pytzer as pz
 
 from scipy.optimize import minimize
 
-# Get data with equilib
-tots,mols,eles,ions,T = aq.io.gettots('data/CRP94 Table 8.csv')
-cf = deepcopy(pz.cfdicts.CRP94)
+# Get data with aqualibrium
+#tots,mols,eles,ions,T = aq.io.gettots('data/CRP94 Table 8.csv')
+tots,mols,eles,ions,T = aq.io.gettots('data/aquaQuickStartX.csv')
+#cf = deepcopy(pz.cfdicts.CRP94)
+cf = deepcopy(pz.cfdicts.MarChemSpec)
 
 ## Switch temperature
 #T[:] = 273.15
@@ -23,12 +25,12 @@ kH2O  = np.exp(ln_kH2O)
 mols = np.concatenate((mols,np.zeros((np.shape(mols)[0],4))), axis=1)
 ions = np.concatenate((ions,np.array(['H','HSO4','SO4','OH'])))
 
-# Add some OH interaction terms
-cf.theta['HSO4-OH'] = pz.coeffs.theta_HSO4_OH_HMW84
-cf.theta['OH-SO4' ] = pz.coeffs.theta_OH_SO4_HMW84
-
-cf.psi['H-HSO4-OH'] = pz.coeffs.psi_H_HSO4_OH_HMW84
-cf.psi['H-OH-SO4' ] = pz.coeffs.psi_H_OH_SO4_HMW84
+## Add some OH interaction terms
+#cf.theta['HSO4-OH'] = pz.coeffs.theta_HSO4_OH_HMW84
+#cf.theta['OH-SO4' ] = pz.coeffs.theta_OH_SO4_HMW84
+#
+#cf.psi['H-HSO4-OH'] = pz.coeffs.psi_H_HSO4_OH_HMW84
+#cf.psi['H-OH-SO4' ] = pz.coeffs.psi_H_OH_SO4_HMW84
 
 # Expand cfdict
 cf.add_zeros(ions)
@@ -76,7 +78,8 @@ def Ksolver_H2SO4_H2O_v1(p_mOH,tots_i,eles,dHSO4,mols_i,ions,T_i,kH2O_i,kHSO4_i)
 
 
 # Define log solver function with H or OH
-def Ksolver_H2SO4_H2O(p_mX,tots_i,eles,dHSO4,mols_i,ions,T_i,kH2O_i,kHSO4_i):
+def Ksolver_H2SO4_H2O(p_mX,tots_i,eles,dHSO4,mols_i,ions,T_i,
+                      ln_kH2O_i,ln_kHSO4_i):
 
     Kmols = deepcopy(mols_i)
     
@@ -139,7 +142,7 @@ def Ksolver_H2SO4_H2O(p_mX,tots_i,eles,dHSO4,mols_i,ions,T_i,kH2O_i,kHSO4_i):
 
 Ksolved = np.full((np.size(T),2),np.nan)
 
-for i in range(2):#range(len(T)):
+for i in range(len(T)):
     
     print(i)
 
@@ -150,23 +153,20 @@ for i in range(2):#range(len(T)):
     ln_kHSO4_i = ln_kHSO4[i]
     ln_kH2O_i  = ln_kH2O [i]
     
-    kHSO4_i = kHSO4[i]
-    kH2O_i  = kH2O [i]
-    
     dHSO4 = 0.5
     
     p_mOH = 7.0
     
     Ksolved_i = minimize(lambda Ksolved: \
         Ksolver_H2SO4_H2O(Ksolved[0],tots_i,eles,Ksolved[1],
-                          mols_i,ions,T_i,kH2O_i,kHSO4_i)[0],
+                          mols_i,ions,T_i,ln_kH2O_i,ln_kHSO4_i)[0],
         [p_mOH,dHSO4], method='Nelder-Mead',
         options={'disp': True, 'adaptive': True})
         
     Ksolved[i] = Ksolved_i['x']
     
     mols[i] = Ksolver_H2SO4_H2O(Ksolved[i][0],tots_i,eles,Ksolved[i][1],
-                                mols_i,ions,T_i,kH2O_i,kHSO4_i)[1][0]
+                                mols_i,ions,T_i,ln_kH2O_i,ln_kHSO4_i)[1][0]
     
     print(Ksolved_i['x'])
     
@@ -177,6 +177,8 @@ acfs = pz.model.acfs(mols,ions,T,cf)
     
 Kst_acfs = kHSO4 * acfs[:,ions=='HSO4'] \
     / (acfs[:,ions=='H'] * acfs[:,ions=='SO4'])
+
+print(-np.log10(mols[:,ions == 'H']))
 
 #%% Save for MATLAB
 #from scipy.io import savemat
