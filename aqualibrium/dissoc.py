@@ -27,8 +27,9 @@ def H2O_M88(T):
 
 def HSO4_CRP94(T):
     
-    # CRP94 Eq. (21)
-    log10_kHSO4 =   562.69486              \
+    # CRP94 Eq. (21) with extra digits on constant term
+    #  (S.L. Clegg, pers. comm, 7 Feb 2019)
+    log10_kHSO4 =   562.694864456          \
                 -   102.5154      * log(T) \
                 -     1.117033e-4 * T**2   \
                 +     0.2477538   * T      \
@@ -36,4 +37,31 @@ def HSO4_CRP94(T):
     
     valid = logical_and(T >= 273.15, T <= 328.15)
     
-    return log10_kHSO4 / log10(exp(1)), valid
+    # Convert log base
+    ln_kHSO4 = log10_kHSO4 / log10(exp(1))
+    
+    return ln_kHSO4, valid
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Clegg & Whitfield (1991) ~~~~~
+    
+def MgOH_CW91(T):
+    
+    # CW91 Eq. (244) [p392]
+    ln_kMgOH = 8.9108 - 1155/T
+    
+    valid = logical_and(T >= 278.15, T <= 308.15)
+    
+    return ln_kMgOH, valid
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Bates & Hetzer (1961) ~~~~~
+    
+def trisH_BH61(T):
+    
+    # BH61 Eq. (3)
+    ln_ktrisH = 2981.4 / T - 3.5888 + 0.005571 * T
+    
+    valid = logical_and(T >= 273.15, T <= 323.15)
+    
+    return ln_ktrisH, valid
