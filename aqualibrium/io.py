@@ -15,7 +15,7 @@ def gettots(filename, delimiter=','):
     nan_to_num(data, copy=False)
 
     # Get temperatures
-    TL = head == 'temp'
+    TL = head == 'tempK'
     T = data[:,TL]
     
     data = data[:,~TL].transpose()

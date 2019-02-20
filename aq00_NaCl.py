@@ -7,7 +7,7 @@ import pytzer as pz
 from scipy.optimize import minimize
 
 # Get data with pytzer
-mols,ions,T = pz.io.getmols('data/NaCl3.csv')
+_,mols,_,ions,T = aq.io.gettots('data/NaCl3.csv')
 cf = deepcopy(pz.cfdicts.M88)
 
 # Calculate H2O thermodynamic dissociation constant
