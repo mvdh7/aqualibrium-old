@@ -86,7 +86,8 @@ def Ksolver_H2SO4_H2O(p_mX,tots_i,eles,dHSO4,mols_i,ions,T_i,
     # Calculate concentrations
     tH2SO4 = tots_i[0][eles == 't_H2SO4']
     
-    mHSO4 = np.maximum(np.minimum(tH2SO4 * dHSO4,tH2SO4),0)
+#    mHSO4 = np.maximum(np.minimum(tH2SO4 * dHSO4,tH2SO4),0)
+    mHSO4 = tH2SO4 * (np.tanh(dHSO4) + 1) / 2
     mSO4  = tH2SO4 - mHSO4
     
     # Put other concentrations into molality array
@@ -153,7 +154,7 @@ for i in range(len(T)):
     ln_kHSO4_i = ln_kHSO4[i]
     ln_kH2O_i  = ln_kH2O [i]
     
-    dHSO4 = 0.5
+    dHSO4 = 0
     
     p_mOH = 7.0
     
@@ -178,6 +179,7 @@ acfs = pz.model.acfs(mols,ions,T,cf)
 Kst_acfs = kHSO4 * acfs[:,ions=='HSO4'] \
     / (acfs[:,ions=='H'] * acfs[:,ions=='SO4'])
 
+# Print out pmH
 print(-np.log10(mols[:,ions == 'H']))
 
 #%% Save for MATLAB
