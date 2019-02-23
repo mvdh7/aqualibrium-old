@@ -6,7 +6,8 @@ import pytzer as pz
 from scipy.optimize import minimize
 
 # Get data with equilib
-tots,mols,eles,ions,T = aq.io.gettots('data/CRP94 Table 8.csv')
+#tots,mols,eles,ions,T = aq.io.gettots('data/CRP94 Table 8.csv')
+tots,mols,eles,ions,T = aq.io.gettots('data/aquaQuickStartX.csv')
 cf = deepcopy(pz.cfdicts.CRP94)
 
 # Calculate HSO4 thermodynamic dissociation constant
@@ -77,9 +78,22 @@ def Ksolver_H2SO4_v2(tots_i,mols_i,eles,ions,T_i,cf,kHSO4_i,p_mH):
 
 # Solve for H and OH concentrations!
 Keq = np.full_like(T,np.nan)
-solvtype = 'v2'
+solvtype = 'v1'
 
-for i in range(5):#range(len(T)):
+# Get grids
+i = 1
+
+tots_i = np.expand_dims(tots[i],0)
+mols_i = np.expand_dims(mols[i],0)
+T_i    = np.expand_dims(T   [i],0)
+ln_kHSO4_i = ln_kHSO4[i]
+kHSO4_i    =    kHSO4[i]
+
+test = Ksolver_H2SO4(tots_i,mols_i,eles,ions,T_i,cf,ln_kHSO4_i,
+                     [0.5,1])
+
+#%% Solve!
+for i in range(len(T)):
 
     print(i)
     
